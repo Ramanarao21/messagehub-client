@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import Button from './Button';
-import Input from './Input';
+import Button from '../sharedComponents/Button';
+import Input from '../sharedComponents/Input';
+import Dashboard from './Dashboard';
+import { useAuth } from '../hooks/useAuth';
+import { showToast } from '../lib/toast';
+import girlProfile from '../assets/girlprofile.jpg';
+import youngBoy from '../assets/youngboy.jpg';
+import youngWomen from '../assets/youngwomen.jpg';
 
 const LandingPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,15 +16,48 @@ const LandingPage = () => {
     username: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { 
+    user, 
+    isAuthenticated, 
+    login, 
+    register,
+    isLoggingIn, 
+    isRegistering,
+  } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Authentication logic will go here
+    
+    try {
+      if (isLogin) {
+        await login({ email: formData.email, password: formData.password });
+        showToast.success('Login successful! Welcome back.');
+      } else {
+        await register({ 
+          username: formData.username, 
+          email: formData.email, 
+          password: formData.password 
+        });
+        showToast.success('Registration successful! Welcome to MessageHub.');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      showToast.error(
+        error instanceof Error ? error.message : 'Authentication failed. Please try again.'
+      );
+    }
   };
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
+
+  const isLoading = isLoggingIn || isRegistering;
+
+  // Show authenticated view
+  if (isAuthenticated && user) {
+    return <Dashboard />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-8">
@@ -80,6 +119,7 @@ const LandingPage = () => {
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleInputChange('username')}
+                disabled={isLoading}
               />
             </div>
             
@@ -88,6 +128,7 @@ const LandingPage = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleInputChange('email')}
+              disabled={isLoading}
             />
             
             <Input
@@ -95,13 +136,20 @@ const LandingPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleInputChange('password')}
+              disabled={isLoading}
             />
 
             <div className="flex gap-4 mt-8">
-              <Button variant="primary" size="lg" fullWidth type="submit">
-                {isLogin ? 'Sign In' : 'Sign Up'}
+              <Button 
+                variant="primary" 
+                size="lg" 
+                fullWidth 
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" disabled={isLoading}>
                 Request Demo
               </Button>
             </div>
@@ -122,7 +170,11 @@ const LandingPage = () => {
                 <div className="flex justify-start animate-float">
                   <div className="bg-white rounded-3xl rounded-bl-sm shadow-lg p-6 max-w-sm">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full"></div>
+                      <img 
+                        src={youngWomen} 
+                        alt="Sarah Johnson" 
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
                       <div>
                         <p className="font-semibold text-slate-800">Sarah Johnson</p>
                         <p className="text-xs text-slate-500">2 min ago</p>
@@ -136,7 +188,11 @@ const LandingPage = () => {
                 <div className="flex justify-end animate-float" style={{ animationDelay: '0.5s' }}>
                   <div className="bg-teal-700 rounded-3xl rounded-br-sm shadow-lg p-6 max-w-sm">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-white rounded-full"></div>
+                      <img 
+                        src={youngBoy} 
+                        alt="Mike Chen" 
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
                       <div>
                         <p className="font-semibold text-white">Mike Chen</p>
                         <p className="text-xs text-teal-200">Just now</p>
@@ -150,7 +206,11 @@ const LandingPage = () => {
                 <div className="flex justify-start animate-float" style={{ animationDelay: '1s' }}>
                   <div className="bg-white rounded-3xl rounded-bl-sm shadow-lg p-6 max-w-sm">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full"></div>
+                      <img 
+                        src={girlProfile} 
+                        alt="Emma Davis" 
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
                       <div>
                         <p className="font-semibold text-slate-800">Emma Davis</p>
                         <p className="text-xs text-slate-500">1 min ago</p>

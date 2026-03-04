@@ -7,6 +7,7 @@ interface ButtonProps {
   onClick?: () => void;
   fullWidth?: boolean;
   type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({ 
@@ -15,7 +16,8 @@ const Button: React.FC<ButtonProps> = ({
   size = 'md',
   onClick,
   fullWidth = false,
-  type = 'button'
+  type = 'button',
+  disabled = false
 }) => {
   const baseStyles = 'font-semibold rounded-2xl transition-all duration-200 inline-flex items-center justify-center gap-2';
   
@@ -34,8 +36,9 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button 
       type={type}
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''}`}
+      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       onClick={onClick}
+      disabled={disabled}
     >
       {children}
     </button>
