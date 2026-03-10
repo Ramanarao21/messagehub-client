@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from '../sharedComponents/Button';
 import Input from '../sharedComponents/Input';
-import Dashboard from './Dashboard';
+import ChatWindow from './ChatWindow';
 import { useAuth } from '../hooks/useAuth';
 import { showToast } from '../lib/toast';
 import girlProfile from '../assets/girlprofile.jpg';
@@ -56,7 +56,7 @@ const LandingPage = () => {
 
   // Show authenticated view
   if (isAuthenticated && user) {
-    return <Dashboard />;
+    return <ChatWindow />;
   }
 
   return (
