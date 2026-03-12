@@ -4,8 +4,8 @@ import Button from '../sharedComponents/Button';
 import Avatar from '../sharedComponents/Avatar';
 import ChatMessage from '../sharedComponents/ChatMessage';
 import FriendListItem from '../sharedComponents/FriendListItem';
-import { dmAPI } from '../api/dm.ts';
-import { initializeSocket, disconnectSocket, sendDM, onReceiveDM, onUserStatus } from '../socket/socket.ts';
+import { dmAPI } from '../services/api/dm';
+import { initializeSocket, disconnectSocket, sendDM, onReceiveDM, onUserStatus } from '../services/socket/socket';
 import type { Message, User } from '../types/chat.types';
 
 
@@ -21,20 +21,25 @@ const ChatWindow = () => {
   // Initialize socket and fetch users on mount
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    if (token) {
+    if (token && user?.id) {
       initializeSocket(token);
       fetchUsers();
+    } else if (token && !user?.id) {
+      console.log('⏳ Token exists but user not loaded yet...');
+    } else {
+      console.log('❌ No auth token found');
     }
 
     return () => {
       disconnectSocket();
     };
-  }, []);
+  }, [user?.id]); 
 
   // Listen for incoming messages (dm:receive event)
   useEffect(() => {
-    const cleanup = onReceiveDM((data: any) => {
-      console.log('📨 dm:receive event received:', data);
+    const cleanup = onReceiveDM((data: any) => {    
+      // Get current user ID
+      const currentUserId = user?.id;
       
       // Backend sends: { id, senderId, senderUsername, recipientId, content, messageType, createdAt }
       const newMessage: any = {
@@ -43,7 +48,7 @@ const ChatWindow = () => {
         receiverId: String(data.recipientId),
         message: data.content || data.message || '',
         timestamp: data.createdAt || new Date().toISOString(),
-        isOwn: String(data.senderId) === String(user?.id),
+        isOwn: String(data.senderId) === String(currentUserId),
         content: data.content,
         senderUsername: data.senderUsername
       };
@@ -52,7 +57,7 @@ const ChatWindow = () => {
         from: data.senderId,
         to: data.recipientId,
         selectedUser: selectedUser?.id,
-        currentUser: user?.id,
+        currentUser: currentUserId,
         isOwn: newMessage.isOwn
       });
 
@@ -87,10 +92,15 @@ const ChatWindow = () => {
   // Listen for user status changes
   useEffect(() => {
     const cleanup = onUserStatus((data: { userId: string; online: boolean }) => {
-      console.log('👤 User status changed:', data);
-      setUsers(prev => prev.map(u => 
-        String(u.id) === String(data.userId) ? { ...u, online: data.online } : u
-      ));
+      setUsers(prev => {
+        const updated = prev.map(u => {
+          if (String(u.id) === String(data.userId)) {
+            return { ...u, online: data.online };
+          }
+          return u;
+        });
+        return updated;
+      });
       
       // Update selected user status
       if (selectedUser && String(selectedUser.id) === String(data.userId)) {
@@ -115,11 +125,12 @@ const ChatWindow = () => {
       console.log('✅ Users fetched:', response);
       
       // Convert id to string if needed
-      const normalizedUsers = response.users.map(u => ({
-        ...u,
-        id: String(u.id),
-        online: u.online || false
-      }));
+      const normalizedUsers = response.users.map(u => {
+        return {
+          ...u,
+          id: String(u.id),
+        };
+      });
       
       setUsers(normalizedUsers);
     } catch (error: any) {

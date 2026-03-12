@@ -7,14 +7,8 @@ let socket: Socket | null = null;
 // Initialize socket connection
 export const initializeSocket = (token: string): Socket => {
   if (socket?.connected) {
-    console.log('✅ Socket already connected:', socket.id);
     return socket;
   }
-
-  console.log('🔌 Initializing socket connection...');
-  console.log('Socket URL:', SOCKET_URL);
-  console.log('Token:', token ? 'Present' : 'Missing');
-
   socket = io(SOCKET_URL, {
     auth: { token },
     transports: ['websocket', 'polling'],

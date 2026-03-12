@@ -1,5 +1,8 @@
+import type { Conversation, User, Message } from '../../types/chat.types';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-import type { Conversation, User , Message } from "../types/chat.types";
+
+// Get auth token
 export const getToken = (): string | null => localStorage.getItem('auth_token');
 
 
@@ -77,8 +80,6 @@ export const dmAPI = {
   // Get messages with a specific user (NEW ENDPOINT)
   getMessages: async (otherUserId: string, limit: number = 50): Promise<{ messages: Message[] }> => {
     const token = getToken();
-    
-    console.log(`📥 Fetching messages: GET /dm/conversation/${otherUserId}?limit=${limit}`);
     
     const response = await fetch(`${API_BASE_URL}/dm/conversation/${otherUserId}?limit=${limit}`, {
       headers: {

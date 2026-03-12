@@ -1,5 +1,7 @@
+import type { Group, CreateGroupData, GroupMessage } from '../../types/group.types';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-import type { Group, CreateGroupData, GroupMessage} from "../types/group.types";
+
 // Get auth token
 const getToken = (): string | null => localStorage.getItem('auth_token');
 

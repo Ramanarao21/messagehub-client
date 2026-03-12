@@ -1,32 +1,5 @@
+import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '../../types/auth.types';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-
-// Auth interfaces
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterCredentials {
-  username: string;
-  email: string;
-  password: string;
-}
-
-interface AuthResponse {
-  token: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-  };
-}
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  createdAt: string;
-}
 
 // Auth API calls
 export const authAPI = {
@@ -45,7 +18,21 @@ export const authAPI = {
     
     const data = await response.json();
     localStorage.setItem('auth_token', data.token);
-    return data;
+    
+    // Normalize user data
+    const normalizedData: AuthResponse = {
+      token: data.token,
+      message: data.message,
+      user: {
+        id: data.user?.userId || data.user?.id || data.userId || data.id,
+        username: data.user?.username || data.username || '',
+        email: data.user?.email || data.email || '',
+        online: data.user?.online || data.online,
+        createdAt: data.user?.createdAt || data.createdAt,
+      }
+    };
+    
+    return normalizedData;
   },
 
   // Register user
@@ -63,7 +50,21 @@ export const authAPI = {
     
     const data = await response.json();
     localStorage.setItem('auth_token', data.token);
-    return data;
+    
+    // Normalize user data
+    const normalizedData: AuthResponse = {
+      token: data.token,
+      message: data.message,
+      user: {
+        id: data.user?.userId || data.user?.id || data.userId || data.id,
+        username: data.user?.username || data.username || '',
+        email: data.user?.email || data.email || '',
+        online: data.user?.online || data.online,
+        createdAt: data.user?.createdAt || data.createdAt,
+      }
+    };
+    
+    return normalizedData;
   },
 
   // Logout user
@@ -95,7 +96,21 @@ export const authAPI = {
       throw new Error('Failed to get user');
     }
     
-    return response.json();
+    const data = await response.json();
+    console.log('📥 getCurrentUser response:', data);
+    
+    // Normalize the response - backend might return userId instead of id
+    const normalizedUser: User = {
+      id: data.userId || data.id || data.user?.userId || data.user?.id,
+      username: data.username || data.user?.username || '',
+      email: data.email || data.user?.email || '',
+      online: data.online || data.user?.online,
+      createdAt: data.createdAt || data.user?.createdAt,
+    };
+    
+    console.log('✅ Normalized user:', normalizedUser);
+    
+    return { user: normalizedUser };
   },
 
   // Get token
