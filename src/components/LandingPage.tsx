@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from '../sharedComponents/Button';
 import Input from '../sharedComponents/Input';
-import Dashboard from './Dashboard';
+import ChatWindow from './ChatWindow';
 import { useAuth } from '../hooks/useAuth';
 import { showToast } from '../lib/toast';
 import girlProfile from '../assets/girlprofile.jpg';
@@ -19,6 +19,7 @@ const LandingPage = () => {
   const { 
     user, 
     isAuthenticated, 
+    isLoading,
     login, 
     register,
     isLoggingIn, 
@@ -52,11 +53,23 @@ const LandingPage = () => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
-  const isLoading = isLoggingIn || isRegistering;
+  const isFormLoading = isLoggingIn || isRegistering;
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-teal-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show authenticated view
   if (isAuthenticated && user) {
-    return <Dashboard />;
+    return <ChatWindow />;
   }
 
   return (
@@ -119,7 +132,7 @@ const LandingPage = () => {
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleInputChange('username')}
-                disabled={isLoading}
+                disabled={isFormLoading}
               />
             </div>
             
@@ -128,7 +141,7 @@ const LandingPage = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleInputChange('email')}
-              disabled={isLoading}
+              disabled={isFormLoading}
             />
             
             <Input
@@ -136,7 +149,7 @@ const LandingPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleInputChange('password')}
-              disabled={isLoading}
+              disabled={isFormLoading}
             />
 
             <div className="flex gap-4 mt-8">
@@ -145,11 +158,11 @@ const LandingPage = () => {
                 size="lg" 
                 fullWidth 
                 type="submit"
-                disabled={isLoading}
+                disabled={isFormLoading}
               >
-                {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+                {isFormLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
               </Button>
-              <Button variant="outline" size="lg" disabled={isLoading}>
+              <Button variant="outline" size="lg" disabled={isFormLoading}>
                 Request Demo
               </Button>
             </div>

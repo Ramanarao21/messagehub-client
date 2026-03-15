@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authApi } from '../services/api';
+import { authAPI } from '../services/api/auth';
 import type { LoginCredentials, RegisterCredentials } from '../types/auth.types';
 
 export const AUTH_QUERY_KEY = ['auth', 'user'] as const;
@@ -9,28 +9,28 @@ export const useAuth = () => {
 
   const { data: currentUser, isLoading: isLoadingUser } = useQuery({
     queryKey: AUTH_QUERY_KEY,
-    queryFn: authApi.getCurrentUser,
-    enabled: !!authApi.getToken(),
+    queryFn: authAPI.getCurrentUser,
+    enabled: !!authAPI.getToken(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const loginMutation = useMutation({
-    mutationFn: authApi.login,
+    mutationFn: authAPI.login,
     onSuccess: (data) => {
       queryClient.setQueryData(AUTH_QUERY_KEY, { user: data.user });
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: authApi.register,
+    mutationFn: authAPI.register,
     onSuccess: (data) => {
       queryClient.setQueryData(AUTH_QUERY_KEY, { user: data.user });
     },
   });
 
   const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
+    mutationFn: authAPI.logout,
     onSuccess: () => {
       queryClient.setQueryData(AUTH_QUERY_KEY, null);
       queryClient.clear();

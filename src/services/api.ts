@@ -89,3 +89,20 @@ export const authApi = {
   setToken: setAuthToken,
   removeToken: removeAuthToken,
 };
+
+export const chatApi = {
+  getUsers: async (): Promise<{ users: User[] }> => {
+    return fetchApi<{ users: User[] }>('/users');
+  },
+
+  getMessages: async (userId: string): Promise<{ messages: any[] }> => {
+    return fetchApi<{ messages: any[] }>(`/messages/${userId}`);
+  },
+
+  sendMessage: async (receiverId: string, message: string): Promise<{ message: any }> => {
+    return fetchApi<{ message: any }>('/messages', {
+      method: 'POST',
+      body: JSON.stringify({ receiverId, message }),
+    });
+  },
+};
